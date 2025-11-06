@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "A2A Example - Dev Container",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/a2a-example",
+  "dockerComposeFile": "docker-compose.yml",
+  "initializeCommand": "sh ./.devcontainer/scripts/init.sh",
+  "postStartCommand": "sh ./.devcontainer/scripts/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "launch": {
+          "version": "0.2.0",
+          "configurations": [
+            
+          ],
+          "compounds": []
+        },
+        "prettier.requireConfig": true,
+        "editor.organizeImports": false,
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "never",
+          "source.fixAll.eslint": "always"
+        }
+      },
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ckolkman.vscode-postgres",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer",
+        "streetsidesoftware.code-spell-checker",
+        "bierner.markdown-mermaid",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}
