@@ -10,21 +10,6 @@ import { HumanMessage, AIMessage } from "@langchain/core/messages";
  * - Agent 2: Writer - Processes and formats the information
  */
 
-// Define the state structure for our graph
-class AgentState {
-  messages;
-  currentAgent;
-  researchData;
-  finalOutput;
-
-  constructor(fields) {
-    this.messages = fields?.messages || [];
-    this.currentAgent = fields?.currentAgent || "researcher";
-    this.researchData = fields?.researchData || "";
-    this.finalOutput = fields?.finalOutput || "";
-  }
-}
-
 // Initialize the LLM (using OpenAI GPT-4)
 // Note: You need to set OPENAI_API_KEY environment variable
 const llm = new ChatOpenAI({
@@ -127,7 +112,6 @@ function buildGraph() {
 
   // Add conditional routing from researcher
   workflow.addConditionalEdges("researcher", routeAgent, {
-    researcher: "researcher",
     writer: "writer",
     end: END,
   });
@@ -143,7 +127,7 @@ function buildGraph() {
  */
 async function main() {
   console.log("🚀 Starting A2A Communication Example with LangGraph\n");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   
   // Check for API key
   if (!process.env.OPENAI_API_KEY) {
@@ -169,7 +153,7 @@ async function main() {
     };
     
     console.log("\n📝 Topic: Tell me about LangGraph and its uses");
-    console.log("=" .repeat(60));
+    console.log("=".repeat(60));
     
     // Run the graph
     const result = await app.invoke(initialState);
