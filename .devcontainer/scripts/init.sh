@@ -10,8 +10,8 @@ if [ ! -f "./.devcontainer/.env.local" ]; then
 fi
 
 # Mount local env file in the projects root
-if [ -f "./.env.local" ]; then
-  rm ./.env.local
+if [ -f "./.env" ]; then
+  rm ./.env
 fi
-cp ./.devcontainer/.env.dev ./.env.local
-echo "" >> .env.local && cat ./.devcontainer/.env.local >> ./.env.local
+cp ./.devcontainer/.env.dev ./.env
+echo "" >> .env && cat ./.devcontainer/.env.local >> ./.env

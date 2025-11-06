@@ -1,8 +1,6 @@
 services:
   devcontainer:
     build: .
-    ports:
-      - 4983:4983
     volumes:
       - ./../:/workspaces/a2a-example
       - devcontainer-zshhistory:/root/commandhistory/.zsh_history
