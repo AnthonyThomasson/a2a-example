@@ -1,0 +1,24 @@
+{
+  "name": "a2a-example",
+  "version": "1.0.0",
+  "description": "This is an example of a2a communication",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "langgraph",
+    "a2a",
+    "agent-to-agent",
+    "ai"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^1.0.3",
+    "@langchain/langgraph": "^1.0.1",
+    "@langchain/openai": "^1.0.0"
+  }
+}
