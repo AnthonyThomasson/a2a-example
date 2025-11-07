@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { StateGraph, END, START } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { HumanMessage } from '@langchain/core/messages'
+import type { BaseMessage } from '@langchain/core/messages'
 
 /**
  * Basic A2A (Agent-to-Agent) Communication Example using LangGraph
@@ -10,6 +11,14 @@ import { HumanMessage } from '@langchain/core/messages'
  * - Agent 1: Researcher - Gathers information
  * - Agent 2: Writer - Processes and formats the information
  */
+
+// Define the state interface for the graph
+interface GraphState {
+  messages: BaseMessage[]
+  currentAgent: 'researcher' | 'writer' | 'complete'
+  researchData: string
+  finalOutput: string
+}
 
 // Initialize the LLM (using OpenAI GPT-4)
 // Note: You need to set OPENAI_API_KEY environment variable
@@ -21,7 +30,7 @@ const llm = new ChatOpenAI({
 /**
  * Researcher Agent - Simulates gathering information on a topic
  */
-async function researcherAgent(state) {
+async function researcherAgent(state: GraphState): Promise<Partial<GraphState>> {
   console.log('\n🔬 Researcher Agent is working...')
 
   const topic = state.messages[state.messages.length - 1]?.content || 'AI and Machine Learning'
@@ -35,7 +44,7 @@ async function researcherAgent(state) {
 
   return {
     ...state,
-    researchData: response.content,
+    researchData: response.content as string,
     currentAgent: 'writer',
     messages: [...state.messages, response],
   }
@@ -44,7 +53,7 @@ async function researcherAgent(state) {
 /**
  * Writer Agent - Takes research and formats it into a well-written output
  */
-async function writerAgent(state) {
+async function writerAgent(state: GraphState): Promise<Partial<GraphState>> {
   console.log('\n✍️  Writer Agent is working...')
 
   const writerPrompt = `You are a writer agent. Take the following research data and 
@@ -60,7 +69,7 @@ async function writerAgent(state) {
 
   return {
     ...state,
-    finalOutput: response.content,
+    finalOutput: response.content as string,
     currentAgent: 'complete',
     messages: [...state.messages, response],
   }
@@ -69,7 +78,7 @@ async function writerAgent(state) {
 /**
  * Router function - Determines which agent should act next
  */
-function routeAgent(state) {
+function routeAgent(state: GraphState): 'researcher' | 'writer' | 'end' {
   if (state.currentAgent === 'researcher') {
     return 'researcher'
   } else if (state.currentAgent === 'writer') {
@@ -83,22 +92,23 @@ function routeAgent(state) {
  * Build the A2A communication graph
  */
 function buildGraph() {
-  const workflow = new StateGraph({
+  const workflow = new StateGraph<GraphState>({
     channels: {
       messages: {
-        value: (left, right) => (left || []).concat(right || []),
+        value: (left: BaseMessage[] | undefined, right: BaseMessage[] | undefined) => (left || []).concat(right || []),
         default: () => [],
       },
       currentAgent: {
-        value: (left, right) => right || left,
-        default: () => 'researcher',
+        value: (left: GraphState['currentAgent'] | undefined, right: GraphState['currentAgent'] | undefined) =>
+          right || left || 'researcher',
+        default: () => 'researcher' as const,
       },
       researchData: {
-        value: (left, right) => right || left,
+        value: (left: string | undefined, right: string | undefined) => right || left || '',
         default: () => '',
       },
       finalOutput: {
-        value: (left, right) => right || left,
+        value: (left: string | undefined, right: string | undefined) => right || left || '',
         default: () => '',
       },
     },
@@ -109,16 +119,20 @@ function buildGraph() {
   workflow.addNode('writer', writerAgent)
 
   // Set entry point
-  workflow.addEdge(START, 'researcher')
+  workflow.addEdge(START, 'researcher' as any)
 
   // Add conditional routing from researcher
-  workflow.addConditionalEdges('researcher', routeAgent, {
-    writer: 'writer',
-    end: END,
-  })
+  workflow.addConditionalEdges(
+    'researcher' as any,
+    routeAgent as any,
+    {
+      writer: 'writer',
+      end: END,
+    } as any,
+  )
 
   // Add edge from writer to end
-  workflow.addEdge('writer', END)
+  workflow.addEdge('writer' as any, END)
 
   return workflow.compile()
 }
@@ -126,7 +140,7 @@ function buildGraph() {
 /**
  * Main execution function
  */
-async function main() {
+async function main(): Promise<void> {
   console.log('🚀 Starting A2A Communication Example with LangGraph\n')
   console.log('='.repeat(60))
 
@@ -146,7 +160,7 @@ async function main() {
     const app = buildGraph()
 
     // Initial state with a topic to research
-    const initialState = {
+    const initialState: GraphState = {
       messages: [new HumanMessage('Tell me about LangGraph and its uses')],
       currentAgent: 'researcher',
       researchData: '',
@@ -157,7 +171,7 @@ async function main() {
     console.log('='.repeat(60))
 
     // Run the graph
-    const result = await app.invoke(initialState)
+    const result = await app.invoke(initialState as any)
 
     console.log('\n' + '='.repeat(60))
     console.log('\n✅ A2A Communication Complete!\n')
@@ -166,8 +180,9 @@ async function main() {
     console.log(result.finalOutput)
     console.log('-'.repeat(60))
   } catch (error) {
-    console.error('\n❌ Error occurred:', error.message)
-    if (error.message.includes('API key')) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('\n❌ Error occurred:', errorMessage)
+    if (errorMessage.includes('API key')) {
       console.log('\nPlease ensure your OPENAI_API_KEY is valid.')
     }
     process.exit(1)

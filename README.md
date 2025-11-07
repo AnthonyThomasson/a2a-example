@@ -27,22 +27,26 @@ The agents communicate through a shared state managed by LangGraph, demonstratin
 ## Installation
 
 1. Clone this repository:
+
 ```bash
 git clone https://github.com/AnthonyThomasson/a2a-example.git
 cd a2a-example
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up your OpenAI API key:
+
 ```bash
 export OPENAI_API_KEY='your-api-key-here'
 ```
 
 Or create a `.env` file:
+
 ```bash
 echo "OPENAI_API_KEY=your-api-key-here" > .env
 ```
@@ -50,11 +54,13 @@ echo "OPENAI_API_KEY=your-api-key-here" > .env
 ## Usage
 
 Run the example:
+
 ```bash
 npm start
 ```
 
 The application will:
+
 1. Start the Researcher Agent to gather information about LangGraph
 2. Pass the research to the Writer Agent
 3. Display the final formatted summary
@@ -90,12 +96,12 @@ Writer output: [Formatted summary]
 
 The application uses LangGraph's `StateGraph` to manage the shared state between agents:
 
-```javascript
-{
-  messages: [],        // Conversation history
-  currentAgent: "",    // Which agent should act next
-  researchData: "",    // Data from the researcher
-  finalOutput: ""      // Final output from the writer
+```typescript
+interface GraphState {
+  messages: BaseMessage[] // Conversation history
+  currentAgent: 'researcher' | 'writer' | 'complete' // Which agent should act next
+  researchData: string // Data from the researcher
+  finalOutput: string // Final output from the writer
 }
 ```
 
@@ -115,11 +121,11 @@ START → Researcher Agent → Writer Agent → END
 
 The `routeAgent` function determines which agent should execute next based on the current state:
 
-```javascript
-function routeAgent(state) {
-  if (state.currentAgent === "researcher") return "researcher";
-  if (state.currentAgent === "writer") return "writer";
-  return "end";
+```typescript
+function routeAgent(state: GraphState): 'researcher' | 'writer' | 'end' {
+  if (state.currentAgent === 'researcher') return 'researcher'
+  if (state.currentAgent === 'writer') return 'writer'
+  return 'end'
 }
 ```
 
@@ -127,44 +133,44 @@ function routeAgent(state) {
 
 ### Modify the Topic
 
-Edit the initial message in `index.js`:
+Edit the initial message in `index.ts`:
 
-```javascript
-const initialState = {
-  messages: [new HumanMessage("Your custom topic here")],
+```typescript
+const initialState: GraphState = {
+  messages: [new HumanMessage('Your custom topic here')],
   // ...
-};
+}
 ```
 
 ### Add More Agents
 
 You can extend the example by adding additional agents:
 
-```javascript
+```typescript
 // Add a new agent function
-async function editorAgent(state) {
+async function editorAgent(state: GraphState): Promise<Partial<GraphState>> {
   // Implementation
 }
 
 // Add to the workflow
-workflow.addNode("editor", editorAgent);
+workflow.addNode('editor', editorAgent)
 
 // Update routing logic
-workflow.addConditionalEdges("writer", routeAgent, {
-  editor: "editor",
+workflow.addConditionalEdges('writer', routeAgent, {
+  editor: 'editor',
   end: END,
-});
+})
 ```
 
 ### Change the LLM Model
 
 Modify the model configuration:
 
-```javascript
+```typescript
 const llm = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo",  // or "gpt-4-turbo", etc.
+  modelName: 'gpt-3.5-turbo', // or "gpt-4-turbo", etc.
   temperature: 0.7,
-});
+})
 ```
 
 ## Dependencies
