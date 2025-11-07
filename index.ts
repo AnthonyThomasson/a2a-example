@@ -5,7 +5,6 @@ import { HumanMessage } from '@langchain/core/messages'
 import type { BaseMessage } from '@langchain/core/messages'
 
 /**
- *
  * Basic A2A (Agent-to-Agent) Communication Example using LangGraph
  *
  * This example demonstrates two agents communicating with each other:
